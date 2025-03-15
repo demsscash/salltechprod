@@ -1,0 +1,197 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    html {
+        font-family: "Poppins", system-ui, sans-serif;
+        scroll-behavior: smooth;
+    }
+}
+
+@layer components {
+    .container {
+        @apply max-w-7xl mx-auto px-5;
+    }
+
+    .gradient-text {
+        @apply bg-gradient-to-r from-salltech-blue via-salltech-purple to-salltech-red bg-200% bg-clip-text text-transparent inline-block;
+        animation: gradient-shift 8s ease infinite;
+    }
+
+    .cta-button {
+        @apply bg-gradient-to-r from-salltech-blue via-salltech-purple to-salltech-red bg-200% text-white py-3 px-8 rounded-full font-semibold transition-all duration-500 ease-in-out relative z-10 overflow-hidden hover:translate-y-[-3px] hover:shadow-lg;
+    }
+
+    .cta-button::after {
+        content: '';
+        @apply absolute top-0 left-0 w-full h-full bg-white rounded-full z-[-1] scale-0 opacity-0 transition-all duration-500 ease-in-out;
+    }
+
+    .cta-button:hover::after {
+        @apply scale-150 opacity-15;
+    }
+
+    .header-link {
+        @apply text-salltech-dark font-medium relative pb-1.5 transition-all duration-300 ease-in-out;
+    }
+
+    .header-link::after {
+        content: '';
+        @apply absolute w-0 h-0.5 bottom-0 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-salltech-blue via-salltech-purple to-salltech-red transition-all duration-400 ease-in-out;
+    }
+
+    .header-link:hover::after {
+        @apply w-full;
+    }
+
+    .service-card {
+        @apply bg-white rounded-3xl p-8 shadow-md transition-all duration-500 relative overflow-hidden z-10 opacity-0 translate-y-12;
+    }
+
+    .service-card.animate {
+        @apply opacity-100 translate-y-0;
+    }
+
+    .service-card:hover {
+        @apply -translate-y-2.5 scale-105 shadow-lg;
+    }
+
+    .service-card::before {
+        content: '';
+        @apply absolute w-full h-1.5 bottom-0 left-0 bg-gradient-to-r from-salltech-blue via-salltech-purple to-salltech-red scale-x-0 origin-left transition-all duration-300 ease-in-out;
+    }
+
+    .service-card:hover::before {
+        @apply scale-x-100;
+    }
+
+    .service-icon {
+        @apply mb-5 text-3xl w-20 h-20 flex items-center justify-center rounded-3xl bg-salltech-blue/10 text-salltech-blue transition-all duration-500 ease-in-out relative overflow-hidden;
+    }
+
+    .portfolio-item {
+        @apply rounded-3xl overflow-hidden relative h-[350px] transition-all duration-500 opacity-0 translate-y-12;
+    }
+
+    .portfolio-item.animate {
+        @apply opacity-100 translate-y-0;
+    }
+
+    .portfolio-item:hover {
+        @apply -translate-y-2.5 scale-105 shadow-lg;
+    }
+
+    .portfolio-overlay {
+        @apply absolute bottom-0 left-0 w-full p-8 bg-gradient-to-t from-black/90 to-black/0 text-white translate-y-[100px] opacity-0 transition-all duration-500 z-[2];
+    }
+
+    .portfolio-item:hover .portfolio-overlay {
+        @apply translate-y-0 opacity-100;
+    }
+
+    .contact-info {
+        @apply flex-1 min-w-[300px] opacity-0 -translate-x-12 transition-all duration-800 ease-in-out;
+    }
+
+    .contact-info.animate {
+        @apply opacity-100 translate-x-0;
+    }
+
+    .contact-form {
+        @apply flex-1 min-w-[300px] p-12 bg-white rounded-3xl shadow-md opacity-0 translate-x-12 transition-all duration-800 ease-in-out;
+    }
+
+    .contact-form.animate {
+        @apply opacity-100 translate-x-0;
+    }
+
+    .section-title {
+        @apply text-center mb-16 opacity-0 translate-y-8 transition-all duration-800 ease-in-out;
+    }
+
+    .section-title.animate {
+        @apply opacity-100 translate-y-0;
+    }
+
+    .section-title h2::after {
+        content: '';
+        @apply absolute w-0 h-[3px] -bottom-1.5 left-1/2 bg-gradient-to-r from-salltech-blue via-salltech-purple to-salltech-red transition-all duration-1000 ease-in-out transform -translate-x-1/2;
+    }
+
+    .section-title.animate h2::after {
+        @apply w-[100px];
+    }
+
+    .hero-content {
+        @apply w-1/2 z-10 opacity-0 translate-y-8 transition-all duration-800 ease-in-out;
+    }
+
+    .hero-content.animate {
+        @apply opacity-100 translate-y-0;
+    }
+}
+
+/* Animations qui ne peuvent pas être facilement faites avec Tailwind */
+@keyframes gradient-shift {
+    0% {
+        background-position: 0% center;
+    }
+
+    50% {
+        background-position: 100% center;
+    }
+
+    100% {
+        background-position: 0% center;
+    }
+}
+
+@keyframes float-1 {
+    0% {
+        transform: translate(0, 0);
+    }
+
+    50% {
+        transform: translate(50px, 50px);
+    }
+
+    100% {
+        transform: translate(0, 0);
+    }
+}
+
+@keyframes float-2 {
+    0% {
+        transform: translate(0, 0);
+    }
+
+    50% {
+        transform: translate(-50px, -30px);
+    }
+
+    100% {
+        transform: translate(0, 0);
+    }
+}
+
+@keyframes float-3 {
+    0% {
+        transform: translate(0, 0);
+    }
+
+    50% {
+        transform: translate(30px, -50px);
+    }
+
+    100% {
+        transform: translate(0, 0);
+    }
+}
+
+/* Utilitaires personnalisés */
+.rotate-y-180 {
+    transform: rotateY(180deg);
+}
