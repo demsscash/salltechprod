@@ -4,14 +4,8 @@ import { useRouter } from 'next/navigation';
 import { ServiceProps } from '@/types';
 import { getServiceById, updateService } from '@/actions/serviceActions';
 
-// Correction de l'interface des paramètres
-interface PageProps {
-    params: {
-        id: string;
-    }
-}
-
-export default function EditServicePage({ params }: PageProps) {
+// Approche 1: Supprimer l'interface PageProps et utiliser 'any' temporairement
+export default function EditServicePage({ params }: any) {
     const serviceId = parseInt(params.id);
     const [service, setService] = useState<ServiceProps>({
         icon: '',
