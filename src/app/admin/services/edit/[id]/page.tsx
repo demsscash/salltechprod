@@ -4,7 +4,14 @@ import { useRouter } from 'next/navigation';
 import { ServiceProps } from '@/types';
 import { getServiceById, updateService } from '@/actions/serviceActions';
 
-export default function EditServicePage({ params }: { params: { id: string } }) {
+// Correction de l'interface des paramètres
+interface PageProps {
+    params: {
+        id: string;
+    }
+}
+
+export default function EditServicePage({ params }: PageProps) {
     const serviceId = parseInt(params.id);
     const [service, setService] = useState<ServiceProps>({
         icon: '',
