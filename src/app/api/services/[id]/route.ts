@@ -1,10 +1,16 @@
 import { supabase } from '@/lib/supabase';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+
+type RouteParams = {
+    params: {
+        id: string;
+    };
+};
 
 // Récupérer un service par ID
 export async function GET(
-    request: Request,
-    { params }: { params: { id: string } }
+    request: NextRequest,
+    { params }: RouteParams
 ) {
     try {
         const { data, error } = await supabase
@@ -29,8 +35,8 @@ export async function GET(
 
 // Mettre à jour un service
 export async function PATCH(
-    request: Request,
-    { params }: { params: { id: string } }
+    request: NextRequest,
+    { params }: RouteParams
 ) {
     try {
         const serviceData = await request.json();
@@ -56,8 +62,8 @@ export async function PATCH(
 
 // Supprimer un service
 export async function DELETE(
-    request: Request,
-    { params }: { params: { id: string } }
+    request: NextRequest,
+    { params }: RouteParams
 ) {
     try {
         const { error } = await supabase
