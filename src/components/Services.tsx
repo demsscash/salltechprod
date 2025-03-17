@@ -1,90 +1,62 @@
 'use client';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-
-interface ServiceItem {
-  id: number;
-  icon: string;
-  title: string;
-  description: string;
-  link: string;
-}
-
-// Données des services
-const services: ServiceItem[] = [
-  {
-    id: 1,
-    icon: '⚡',
-    title: 'Sites Internet',
-    description: 'Création de sites web performants et adaptés aux réalités mauritaniennes, optimisés pour les connexions locales et le multilinguisme.',
-    link: '#'
-  },
-  {
-    id: 2,
-    icon: '📱',
-    title: 'Applications Mobiles',
-    description: 'Applications natives et cross-platform pour iOS et Android, adaptées au marché mauritanien et aux usages spécifiques en Afrique de l\'Ouest.',
-    link: '#'
-  },
-  {
-    id: 3,
-    icon: '🔍',
-    title: 'Solutions Odoo',
-    description: 'Implémentation et personnalisation d\'Odoo ERP pour les entreprises mauritaniennes, avec adaptation aux normes fiscales et commerciales locales.',
-    link: '#'
-  },
-  {
-    id: 4,
-    icon: '🚀',
-    title: 'Consulting DevOps & Cloud',
-    description: 'Services DevOps et solutions Cloud adaptés aux infrastructures mauritaniennes, avec déploiements optimisés et migration vers AWS, Azure ou GCP.',
-    link: '#'
-  },
-  {
-    id: 5,
-    icon: '🌐',
-    title: 'Hébergement Web',
-    description: 'Services d\'hébergement optimisés pour le marché mauritanien avec data centers au Maroc et en Europe, garantissant rapidité et stabilité.',
-    link: '#'
-  },
-  {
-    id: 6,
-    icon: '📈',
-    title: 'SEO & Référencement',
-    description: 'Stratégies SEO spécifiques pour la Mauritanie et l\'Afrique de l\'Ouest, optimisation pour les recherches en français et en arabe.',
-    link: '#'
-  }
-];
+import { ServiceProps } from '@/types';
+import { getServices } from '@/actions/getServices';
 
 export default function Services() {
+  const [services, setServices] = useState<ServiceProps[]>([]);
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
-    // Fonction pour vérifier si un élément est visible dans la fenêtre
+    async function loadServices() {
+      const data = await getServices();
+      setServices(data);
+      setLoading(false);
+    }
+
+    loadServices();
+
+    // Code d'animation existant...
     function isElementInViewport(el: Element) {
       const rect = el.getBoundingClientRect();
       return (
         rect.top <= (window.innerHeight || document.documentElement.clientHeight) * 0.85
       );
     }
-    
-    // Ajoute la classe 'animate' aux éléments visibles
+
     function handleScroll() {
       const elements = document.querySelectorAll('.service-card, .section-title');
-      
+
       elements.forEach(element => {
         if (isElementInViewport(element) && !element.classList.contains('animate')) {
           element.classList.add('animate');
         }
       });
     }
-    
-    // Appel initial et à chaque défilement
+
     handleScroll();
     window.addEventListener('scroll', handleScroll);
-    
+
     return () => {
       window.removeEventListener('scroll', handleScroll);
     };
   }, []);
+
+  if (loading) {
+    return (
+      <section className="services" id="services">
+        <div className="container">
+          <div className="section-title">
+            <h2>Nos <span className="gradient-text">Services</span></h2>
+          </div>
+          <div className="flex justify-center items-center h-64">
+            <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-salltech-blue"></div>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="services" id="services">
@@ -94,14 +66,16 @@ export default function Services() {
           <p>Startup technologique en Mauritanie, nous proposons des solutions innovantes adaptées aux spécificités du marché local</p>
         </div>
         <div className="services-grid">
-          {services.map(service => (
-            <div key={service.id} className="service-card">
-              <div className="service-icon">
+          {services.map((service, index) => (
+            <div key={service.id} className="service-card" style={{ transitionDelay: `${index * 0.1}s` }}>
+              <div className={`service-icon bg-salltech-${index % 3 === 0 ? 'blue' : index % 3 === 1 ? 'purple' : 'red'}/10 text-salltech-${index % 3 === 0 ? 'blue' : index % 3 === 1 ? 'purple' : 'red'}`}>
                 <span>{service.icon}</span>
               </div>
               <h3>{service.title}</h3>
               <p>{service.description}</p>
-              <Link href={service.link} className="service-link">En savoir plus <span>→</span></Link>
+              <Link href={service.link ?? '#'} className="service-link">
+                En savoir plus <span>→</span>
+              </Link>
             </div>
           ))}
         </div>

@@ -2,6 +2,7 @@ import './globals.css';
 import { AnimationObserver } from '@/utils/animationObserver';
 import { Metadata } from 'next';
 import { ReactNode } from 'react';
+import { AuthProvider } from '@/components/AuthProvider';
 
 export const metadata: Metadata = {
   title: 'SALLTECH - Solutions Technologiques à Nouakchott, Mauritanie',
@@ -27,12 +28,17 @@ interface RootLayoutProps {
   children: ReactNode;
 }
 
+
+
+
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="fr">
       <body>
-        <AnimationObserver />
-        {children}
+        <AuthProvider>
+          <AnimationObserver />
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );

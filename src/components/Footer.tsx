@@ -1,7 +1,55 @@
+'use client';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Logo from './Logo';
+import { SocialLink, FooterLinkGroup } from '@/types';
+import { getSocialLinks } from '@/actions/getSocialLinks';
+
+// Données statiques pour les groupes de liens du footer
+const footerLinkGroups: FooterLinkGroup[] = [
+  {
+    title: 'Entreprise',
+    links: [
+      { name: 'À propos', url: '#' },
+      { name: 'Notre équipe', url: '#' },
+      { name: 'Carrières', url: '#' },
+      { name: 'Contact', url: '#' }
+    ]
+  },
+  {
+    title: 'Services',
+    links: [
+      { name: 'Sites Internet', url: '#' },
+      { name: 'Applications Mobiles', url: '#' },
+      { name: 'Solutions Odoo', url: '#' },
+      { name: 'DevOps & Cloud', url: '#' },
+      { name: 'Hébergement Web', url: '#' },
+      { name: 'SEO & Référencement', url: '#' }
+    ]
+  },
+  {
+    title: 'Ressources',
+    links: [
+      { name: 'Blog', url: '#' },
+      { name: 'Études de cas', url: '#' },
+      { name: 'Documentation', url: '#' },
+      { name: 'FAQ', url: '#' }
+    ]
+  }
+];
 
 export default function Footer() {
+  const [socialLinks, setSocialLinks] = useState<SocialLink[]>([]);
+
+  useEffect(() => {
+    async function loadSocialLinks() {
+      const links = await getSocialLinks();
+      setSocialLinks(links);
+    }
+
+    loadSocialLinks();
+  }, []);
+
   return (
     <footer>
       <div className="container">
@@ -12,41 +60,26 @@ export default function Footer() {
             </div>
             <p>Développer des solutions digitales innovantes pour répondre aux besoins spécifiques du marché mauritanien.</p>
             <div className="social-links">
-              <a href="#" aria-label="Facebook"><span>f</span></a>
-              <a href="#" aria-label="Twitter"><span>t</span></a>
-              <a href="#" aria-label="LinkedIn"><span>in</span></a>
-              <a href="#" aria-label="Instagram"><span>ig</span></a>
+              {socialLinks.map(link => (
+                <a key={link.id} href={link.url} aria-label={link.label}>
+                  <span>{link.name}</span>
+                </a>
+              ))}
             </div>
           </div>
-          <div className="footer-links">
-            <h3>Entreprise</h3>
-            <ul>
-              <li><Link href="#">À propos</Link></li>
-              <li><Link href="#">Notre équipe</Link></li>
-              <li><Link href="#">Carrières</Link></li>
-              <li><Link href="#">Contact</Link></li>
-            </ul>
-          </div>
-          <div className="footer-links">
-            <h3>Services</h3>
-            <ul>
-              <li><Link href="#">Sites Internet</Link></li>
-              <li><Link href="#">Applications Mobiles</Link></li>
-              <li><Link href="#">Solutions Odoo</Link></li>
-              <li><Link href="#">DevOps & Cloud</Link></li>
-              <li><Link href="#">Hébergement Web</Link></li>
-              <li><Link href="#">SEO & Référencement</Link></li>
-            </ul>
-          </div>
-          <div className="footer-links">
-            <h3>Ressources</h3>
-            <ul>
-              <li><Link href="#">Blog</Link></li>
-              <li><Link href="#">Études de cas</Link></li>
-              <li><Link href="#">Documentation</Link></li>
-              <li><Link href="#">FAQ</Link></li>
-            </ul>
-          </div>
+
+          {footerLinkGroups.map((group, index) => (
+            <div key={index} className="footer-links">
+              <h3>{group.title}</h3>
+              <ul>
+                {group.links.map((link, linkIndex) => (
+                  <li key={linkIndex}>
+                    <Link href={link.url}>{link.name}</Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </div>
         <div className="copyright">
           <p>&copy; {new Date().getFullYear()} SALLTECH Mauritanie. Tous droits réservés.</p>
