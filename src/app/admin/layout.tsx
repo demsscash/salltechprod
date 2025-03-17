@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import Logo from '@/components/Logo';
-import { supabase } from '@/lib/supabase';
+import { supabase, getSessionWithCache } from '@/lib/supabase';
 
 export default function AdminLayout({
     children,
@@ -18,10 +18,14 @@ export default function AdminLayout({
 
     // Vérifier l'authentification au chargement
     useEffect(() => {
+        let isActive = true;
+
         async function checkAuth() {
             try {
                 setLoading(true);
-                const { data: { session } } = await supabase.auth.getSession();
+                const { data: { session } } = await getSessionWithCache();
+
+                if (!isActive) return;
 
                 if (!session) {
                     router.push('/login');
@@ -30,13 +34,17 @@ export default function AdminLayout({
                 }
             } catch (error) {
                 console.error('Erreur lors de la vérification de l\'authentification:', error);
-                router.push('/login');
+                if (isActive) router.push('/login');
             } finally {
-                setLoading(false);
+                if (isActive) setLoading(false);
             }
         }
 
         checkAuth();
+
+        return () => {
+            isActive = false;
+        };
     }, [router]);
 
     const handleSignOut = async () => {

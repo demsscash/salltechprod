@@ -1,8 +1,12 @@
 'use client';
-import { useState, FormEvent, useEffect } from 'react';
+import { useState, FormEvent, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Logo from '@/components/Logo';
 import { supabase } from '@/lib/supabase';
+
+// Contrôle des tentatives côté client
+let lastLoginAttempt = 0;
+const LOGIN_THROTTLE = 1000; // 1 seconde entre les tentatives
 
 export default function LoginPage() {
     const [email, setEmail] = useState('');
@@ -10,13 +14,22 @@ export default function LoginPage() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const router = useRouter();
+    const authCheckPerformed = useRef(false);
 
     // Vérifier si l'utilisateur est déjà connecté
     useEffect(() => {
+        // Ne vérifier qu'une seule fois
+        if (authCheckPerformed.current) return;
+        authCheckPerformed.current = true;
+
         async function checkAuth() {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-                router.push('/admin');
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                if (session) {
+                    router.push('/admin');
+                }
+            } catch (error) {
+                console.error('Erreur lors de la vérification de l\'authentification:', error);
             }
         }
 
@@ -25,21 +38,46 @@ export default function LoginPage() {
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
+
+        // Vérifier si on peut faire une nouvelle tentative de connexion
+        const now = Date.now();
+        if (now - lastLoginAttempt < LOGIN_THROTTLE) {
+            setError(`Veuillez patienter avant de réessayer`);
+            return;
+        }
+
         setLoading(true);
         setError('');
+        lastLoginAttempt = now;
 
         try {
-            const { data, error } = await supabase.auth.signInWithPassword({
-                email,
-                password
+            // Utiliser notre route API
+            const response = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email, password }),
             });
 
-            if (error) {
-                throw new Error(error.message);
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Erreur lors de la connexion');
             }
 
-            if (data?.session) {
+            if (data.success && data.session) {
+                // Définir manuellement la session Supabase
+                await supabase.auth.setSession({
+                    access_token: data.session.access_token,
+                    refresh_token: data.session.refresh_token
+                });
+
+                // Rafraîchir et rediriger
+                router.refresh();
                 router.push('/admin');
+            } else {
+                setError('Échec de la connexion');
             }
         } catch (err: any) {
             setError(err.message || 'Erreur lors de la connexion');
@@ -78,6 +116,7 @@ export default function LoginPage() {
                             className="form-input"
                             required
                             placeholder="votre@email.com"
+                            disabled={loading}
                         />
                     </div>
 
@@ -93,6 +132,7 @@ export default function LoginPage() {
                             className="form-input"
                             required
                             placeholder="••••••••"
+                            disabled={loading}
                         />
                     </div>
 
