@@ -1,45 +1,20 @@
 'use client';
-import { useEffect, useState, FormEvent } from 'react';
+import { useState, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { ServiceProps } from '@/types';
-import { getServiceById, updateService } from '@/actions/serviceActions';
+import { createService } from '@/actions/serviceActions';
 
-export default function EditServicePage({ params }: { params: { id: string } }) {
-    const serviceId = parseInt(params.id);
-    const [service, setService] = useState<ServiceProps>({
+export default function CreateServicePage() {
+    const [service, setService] = useState<Omit<ServiceProps, 'id'>>({
         icon: '',
         title: '',
-        description: ''
+        description: '',
+        link: ''
     });
-    const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
     const router = useRouter();
-
-    useEffect(() => {
-        async function fetchService() {
-            try {
-                if (isNaN(serviceId)) {
-                    throw new Error('ID de service invalide');
-                }
-
-                const result = await getServiceById(serviceId);
-                if (!result.success || !result.data) {
-                    throw new Error(result.error || 'Service non trouvé');
-                }
-
-                setService(result.data);
-            } catch (err: any) {
-                setError('Erreur lors du chargement du service: ' + err.message);
-                console.error(err);
-            } finally {
-                setLoading(false);
-            }
-        }
-
-        fetchService();
-    }, [serviceId]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
@@ -53,51 +28,35 @@ export default function EditServicePage({ params }: { params: { id: string } }) 
         setSuccessMessage('');
 
         try {
-            if (isNaN(serviceId)) {
-                throw new Error('ID de service invalide');
+            // Validation basique
+            if (!service.title || !service.description || !service.icon) {
+                throw new Error('Tous les champs obligatoires doivent être remplis');
             }
 
-            // Créer un objet avec seulement les champs à mettre à jour
-            const updates: Partial<ServiceProps> = {
-                icon: service.icon,
-                title: service.title,
-                description: service.description,
-                link: service.link
-            };
-
-            const result = await updateService(serviceId, updates);
+            const result = await createService(service);
 
             if (!result.success) {
-                throw new Error(result.error || 'Erreur lors de la mise à jour');
+                throw new Error(result.error || 'Erreur lors de la création du service');
             }
 
-            setSuccessMessage('Service mis à jour avec succès!');
+            setSuccessMessage('Service créé avec succès!');
 
             // Rediriger après un court délai
             setTimeout(() => {
                 router.push('/admin');
                 router.refresh();
             }, 1500);
-
         } catch (err: any) {
-            setError('Erreur lors de la mise à jour: ' + err.message);
+            setError('Erreur: ' + err.message);
             console.error(err);
         } finally {
             setSaving(false);
         }
     };
 
-    if (loading) {
-        return (
-            <div className="loading-container">
-                <div className="loading-spinner"></div>
-            </div>
-        );
-    }
-
     return (
         <>
-            <h1 className="admin-title" style={{ marginBottom: '24px' }}>Modifier le service</h1>
+            <h1 className="admin-title" style={{ marginBottom: '24px' }}>Créer un nouveau service</h1>
 
             {error && (
                 <div className="alert alert-error">
@@ -114,7 +73,7 @@ export default function EditServicePage({ params }: { params: { id: string } }) 
             <form onSubmit={handleSubmit} className="form">
                 <div className="form-group">
                     <label className="form-label" htmlFor="icon">
-                        Icône
+                        Icône *
                     </label>
                     <input
                         type="text"
@@ -124,13 +83,14 @@ export default function EditServicePage({ params }: { params: { id: string } }) 
                         onChange={handleChange}
                         className="form-input"
                         required
+                        placeholder="Exemple: ⚡"
                     />
                     <p className="form-hint">Utilisez un emoji ou un caractère symbolique</p>
                 </div>
 
                 <div className="form-group">
                     <label className="form-label" htmlFor="title">
-                        Titre
+                        Titre *
                     </label>
                     <input
                         type="text"
@@ -140,12 +100,13 @@ export default function EditServicePage({ params }: { params: { id: string } }) 
                         onChange={handleChange}
                         className="form-input"
                         required
+                        placeholder="Exemple: Sites Internet"
                     />
                 </div>
 
                 <div className="form-group">
                     <label className="form-label" htmlFor="description">
-                        Description
+                        Description *
                     </label>
                     <textarea
                         id="description"
@@ -155,6 +116,7 @@ export default function EditServicePage({ params }: { params: { id: string } }) 
                         className="form-textarea"
                         rows={4}
                         required
+                        placeholder="Décrivez le service en quelques phrases..."
                     />
                 </div>
 
@@ -166,9 +128,10 @@ export default function EditServicePage({ params }: { params: { id: string } }) 
                         type="text"
                         id="link"
                         name="link"
-                        value={service.link || ''}
+                        value={service.link}
                         onChange={handleChange}
                         className="form-input"
+                        placeholder="https://exemple.com"
                     />
                 </div>
 
@@ -186,7 +149,7 @@ export default function EditServicePage({ params }: { params: { id: string } }) 
                         className="form-button-submit"
                         disabled={saving}
                     >
-                        {saving ? 'Sauvegarde...' : 'Sauvegarder'}
+                        {saving ? 'Création...' : 'Créer le service'}
                     </button>
                 </div>
             </form>

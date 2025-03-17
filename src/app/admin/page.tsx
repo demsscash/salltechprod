@@ -8,7 +8,7 @@ import { getContactInfo } from '@/actions/getContactInfo';
 import { deleteService } from '@/actions/serviceActions';
 import { deletePortfolioItem } from '@/actions/portfolioActions';
 
-export default function AdminPage() {
+export default function AdminDashboard() {
     const [services, setServices] = useState<ServiceProps[]>([]);
     const [portfolioItems, setPortfolioItems] = useState<PortfolioItemProps[]>([]);
     const [contactInfo, setContactInfo] = useState<ContactInfo | null>(null);
@@ -75,190 +75,268 @@ export default function AdminPage() {
 
     if (loading) {
         return (
-            <div className="container mx-auto p-8">
-                <h1 className="text-3xl font-bold mb-8">Panel d'administration</h1>
-                <div className="flex justify-center items-center h-64">
-                    <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-salltech-blue"></div>
-                </div>
+            <div className="loading-container">
+                <div className="loading-spinner"></div>
             </div>
         );
     }
 
     if (error) {
         return (
-            <div className="container mx-auto p-8">
-                <h1 className="text-3xl font-bold mb-8">Panel d'administration</h1>
-                <div className="flex justify-center items-center h-64 flex-col">
-                    <p className="text-red-500 mb-4">{error}</p>
-                    <button
-                        onClick={() => window.location.reload()}
-                        className="bg-salltech-blue text-white py-2 px-4 rounded hover:bg-opacity-80 transition-all"
-                    >
-                        Réessayer
-                    </button>
-                </div>
+            <div className="alert alert-error">
+                <p>{error}</p>
+                <button
+                    onClick={() => window.location.reload()}
+                    className="form-button-submit"
+                    style={{ marginTop: '16px' }}
+                >
+                    Réessayer
+                </button>
             </div>
         );
     }
 
     return (
-        <div className="container mx-auto p-8">
-            <h1 className="text-3xl font-bold mb-8">Panel d'administration</h1>
-
-            <div className="flex border-b mb-6">
-                <button
-                    className={`py-2 px-4 ${activeTab === 'services' ? 'border-b-2 border-salltech-blue font-bold' : ''}`}
-                    onClick={() => setActiveTab('services')}
-                >
-                    Services
-                </button>
-                <button
-                    className={`py-2 px-4 ${activeTab === 'portfolio' ? 'border-b-2 border-salltech-blue font-bold' : ''}`}
-                    onClick={() => setActiveTab('portfolio')}
-                >
-                    Portfolio
-                </button>
-                <button
-                    className={`py-2 px-4 ${activeTab === 'contact' ? 'border-b-2 border-salltech-blue font-bold' : ''}`}
-                    onClick={() => setActiveTab('contact')}
-                >
-                    Contact
-                </button>
+        <>
+            <div className="admin-page-title">
+                <h1 className="admin-title">Tableau de bord d'administration</h1>
+                <p className="admin-subtitle">Gérez le contenu de votre site web</p>
             </div>
 
-            {activeTab === 'services' && (
-                <div>
-                    <div className="flex justify-between items-center mb-4">
-                        <h2 className="text-2xl font-bold">Services</h2>
-                        <button
-                            onClick={() => router.push('/admin/services/new')}
-                            className="bg-salltech-blue text-white py-2 px-4 rounded hover:bg-opacity-80 transition-all"
-                        >
-                            Ajouter un service
-                        </button>
-                    </div>
-                    <div className="overflow-x-auto">
-                        <table className="min-w-full bg-white border">
-                            <thead>
-                                <tr>
-                                    <th className="py-2 px-4 border">ID</th>
-                                    <th className="py-2 px-4 border">Icône</th>
-                                    <th className="py-2 px-4 border">Titre</th>
-                                    <th className="py-2 px-4 border">Description</th>
-                                    <th className="py-2 px-4 border">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {services.map(service => (
-                                    <tr key={service.id}>
-                                        <td className="py-2 px-4 border">{service.id}</td>
-                                        <td className="py-2 px-4 border">{service.icon}</td>
-                                        <td className="py-2 px-4 border">{service.title}</td>
-                                        <td className="py-2 px-4 border">{service.description.substring(0, 50)}...</td>
-                                        <td className="py-2 px-4 border">
-                                            <button
-                                                onClick={() => router.push(`/admin/services/edit/${service.id}`)}
-                                                className="bg-salltech-blue text-white py-1 px-3 rounded mr-2 hover:bg-opacity-80 transition-all"
-                                            >
-                                                Modifier
-                                            </button>
-                                            <button
-                                                onClick={() => handleDeleteService(service.id)}
-                                                className="bg-red-500 text-white py-1 px-3 rounded hover:bg-opacity-80 transition-all"
-                                            >
-                                                Supprimer
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+            <div className="admin-cards">
+                <div className="admin-card admin-card-blue">
+                    <h3 className="admin-card-title">Services</h3>
+                    <p className="admin-card-content">Nombre total: {services.length}</p>
+                    <button
+                        onClick={() => router.push('/admin/services/new')}
+                        className="cta-button"
+                    >
+                        Ajouter un service
+                    </button>
                 </div>
-            )}
 
-            {activeTab === 'portfolio' && (
-                <div>
-                    <div className="flex justify-between items-center mb-4">
-                        <h2 className="text-2xl font-bold">Projets Portfolio</h2>
-                        <button
-                            onClick={() => router.push('/admin/portfolio/new')}
-                            className="bg-salltech-blue text-white py-2 px-4 rounded hover:bg-opacity-80 transition-all"
-                        >
-                            Ajouter un projet
-                        </button>
-                    </div>
-                    <div className="overflow-x-auto">
-                        <table className="min-w-full bg-white border">
-                            <thead>
-                                <tr>
-                                    <th className="py-2 px-4 border">ID</th>
-                                    <th className="py-2 px-4 border">Image</th>
-                                    <th className="py-2 px-4 border">Titre</th>
-                                    <th className="py-2 px-4 border">Description</th>
-                                    <th className="py-2 px-4 border">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {portfolioItems.map(item => (
-                                    <tr key={item.id}>
-                                        <td className="py-2 px-4 border">{item.id}</td>
-                                        <td className="py-2 px-4 border">
-                                            <img src={item.image} alt={item.title} className="w-16 h-16 object-cover" />
-                                        </td>
-                                        <td className="py-2 px-4 border">{item.title}</td>
-                                        <td className="py-2 px-4 border">{item.description.substring(0, 50)}...</td>
-                                        <td className="py-2 px-4 border">
-                                            <button
-                                                onClick={() => router.push(`/admin/portfolio/edit/${item.id}`)}
-                                                className="bg-salltech-blue text-white py-1 px-3 rounded mr-2 hover:bg-opacity-80 transition-all"
-                                            >
-                                                Modifier
-                                            </button>
-                                            <button
-                                                onClick={() => handleDeletePortfolioItem(item.id)}
-                                                className="bg-red-500 text-white py-1 px-3 rounded hover:bg-opacity-80 transition-all"
-                                            >
-                                                Supprimer
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                <div className="admin-card admin-card-purple">
+                    <h3 className="admin-card-title">Portfolio</h3>
+                    <p className="admin-card-content">Nombre total: {portfolioItems.length}</p>
+                    <button
+                        onClick={() => router.push('/admin/portfolio/new')}
+                        className="cta-button"
+                    >
+                        Ajouter un projet
+                    </button>
                 </div>
-            )}
 
-            {activeTab === 'contact' && (
-                <div>
-                    <h2 className="text-2xl font-bold mb-4">Informations de Contact</h2>
-                    {contactInfo ? (
-                        <div className="bg-white p-6 rounded-lg shadow-md">
-                            <div className="mb-4">
-                                <h3 className="font-bold">Adresse:</h3>
-                                <p>{contactInfo.address}</p>
-                            </div>
-                            <div className="mb-4">
-                                <h3 className="font-bold">Email:</h3>
-                                <p>{contactInfo.email}</p>
-                            </div>
-                            <div className="mb-4">
-                                <h3 className="font-bold">Téléphone:</h3>
-                                <p>{contactInfo.phone}</p>
-                            </div>
+                <div className="admin-card admin-card-red">
+                    <h3 className="admin-card-title">Contact</h3>
+                    <p className="admin-card-content">Informations de contact: {contactInfo ? 'Configurées' : 'Non configurées'}</p>
+                    <button
+                        onClick={() => router.push('/admin/contact/edit')}
+                        className="cta-button"
+                    >
+                        Modifier les infos
+                    </button>
+                </div>
+            </div>
+
+            <div className="admin-tabs">
+                <div className="admin-tab-buttons">
+                    <button
+                        className={`admin-tab-button ${activeTab === 'services' ? 'active' : ''}`}
+                        onClick={() => setActiveTab('services')}
+                    >
+                        Services
+                    </button>
+                    <button
+                        className={`admin-tab-button ${activeTab === 'portfolio' ? 'active' : ''}`}
+                        onClick={() => setActiveTab('portfolio')}
+                    >
+                        Portfolio
+                    </button>
+                    <button
+                        className={`admin-tab-button ${activeTab === 'contact' ? 'active' : ''}`}
+                        onClick={() => setActiveTab('contact')}
+                    >
+                        Contact
+                    </button>
+                </div>
+
+                {activeTab === 'services' && (
+                    <div className="admin-tab-content">
+                        <div className="admin-section-header">
+                            <h2 className="admin-section-title">Services</h2>
                             <button
-                                onClick={() => router.push('/admin/contact/edit')}
-                                className="bg-salltech-blue text-white py-2 px-4 rounded hover:bg-opacity-80 transition-all"
+                                onClick={() => router.push('/admin/services/new')}
+                                className="admin-button"
                             >
-                                Modifier
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                                </svg>
+                                Ajouter un service
                             </button>
                         </div>
-                    ) : (
-                        <p>Aucune information de contact trouvée.</p>
-                    )}
-                </div>
-            )}
-        </div>
+                        <div className="admin-table-wrapper">
+                            <table className="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Icône</th>
+                                        <th>Titre</th>
+                                        <th>Description</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {services.length > 0 ? (
+                                        services.map(service => (
+                                            <tr key={service.id}>
+                                                <td>{service.id}</td>
+                                                <td style={{ fontSize: '24px' }}>{service.icon}</td>
+                                                <td>{service.title}</td>
+                                                <td>{service.description.substring(0, 70)}...</td>
+                                                <td>
+                                                    <div className="admin-action-buttons">
+                                                        <button
+                                                            onClick={() => router.push(`/admin/services/edit/${service.id}`)}
+                                                            className="admin-edit-button"
+                                                        >
+                                                            Modifier
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleDeleteService(service.id)}
+                                                            className="admin-delete-button"
+                                                        >
+                                                            Supprimer
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    ) : (
+                                        <tr>
+                                            <td colSpan={5} style={{ textAlign: 'center', padding: '24px' }}>
+                                                Aucun service trouvé
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                )}
+
+                {activeTab === 'portfolio' && (
+                    <div className="admin-tab-content">
+                        <div className="admin-section-header">
+                            <h2 className="admin-section-title">Projets Portfolio</h2>
+                            <button
+                                onClick={() => router.push('/admin/portfolio/new')}
+                                className="admin-button"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                                </svg>
+                                Ajouter un projet
+                            </button>
+                        </div>
+                        <div className="admin-table-wrapper">
+                            <table className="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Image</th>
+                                        <th>Titre</th>
+                                        <th>Description</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {portfolioItems.length > 0 ? (
+                                        portfolioItems.map(item => (
+                                            <tr key={item.id}>
+                                                <td>{item.id}</td>
+                                                <td>
+                                                    <div className="admin-table-image">
+                                                        <img src={item.image} alt={item.title} />
+                                                    </div>
+                                                </td>
+                                                <td>{item.title}</td>
+                                                <td>{item.description.substring(0, 70)}...</td>
+                                                <td>
+                                                    <div className="admin-action-buttons">
+                                                        <button
+                                                            onClick={() => router.push(`/admin/portfolio/edit/${item.id}`)}
+                                                            className="admin-edit-button"
+                                                        >
+                                                            Modifier
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleDeletePortfolioItem(item.id)}
+                                                            className="admin-delete-button"
+                                                        >
+                                                            Supprimer
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    ) : (
+                                        <tr>
+                                            <td colSpan={5} style={{ textAlign: 'center', padding: '24px' }}>
+                                                Aucun projet trouvé
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                )}
+
+                {activeTab === 'contact' && (
+                    <div className="admin-tab-content">
+                        <h2 className="admin-section-title">Informations de Contact</h2>
+                        {contactInfo ? (
+                            <div className="admin-info-card">
+                                <div className="admin-info-grid">
+                                    <div className="admin-info-item">
+                                        <h3 className="admin-info-label">Adresse</h3>
+                                        <p className="admin-info-value">{contactInfo.address}</p>
+                                    </div>
+                                    <div className="admin-info-item">
+                                        <h3 className="admin-info-label">Email</h3>
+                                        <p className="admin-info-value">{contactInfo.email}</p>
+                                    </div>
+                                    <div className="admin-info-item">
+                                        <h3 className="admin-info-label">Téléphone</h3>
+                                        <p className="admin-info-value">{contactInfo.phone}</p>
+                                    </div>
+                                </div>
+                                <div style={{ marginTop: '24px' }}>
+                                    <button
+                                        onClick={() => router.push('/admin/contact/edit')}
+                                        className="admin-button"
+                                    >
+                                        Modifier les informations
+                                    </button>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="alert alert-warning">
+                                <p>Aucune information de contact configurée.</p>
+                                <button
+                                    onClick={() => router.push('/admin/contact/edit')}
+                                    className="form-button-submit"
+                                    style={{ marginTop: '16px' }}
+                                >
+                                    Configurer les informations de contact
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                )}
+            </div>
+        </>
     );
 }

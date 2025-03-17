@@ -1,7 +1,8 @@
 'use client';
-import { useState, FormEvent } from 'react';
+import { useState, FormEvent, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { signIn } from '@/actions/authActions';
+import Logo from '@/components/Logo';
+import { supabase } from '@/lib/supabase';
 
 export default function LoginPage() {
     const [email, setEmail] = useState('');
@@ -10,22 +11,38 @@ export default function LoginPage() {
     const [error, setError] = useState('');
     const router = useRouter();
 
+    // Vérifier si l'utilisateur est déjà connecté
+    useEffect(() => {
+        async function checkAuth() {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                router.push('/admin');
+            }
+        }
+
+        checkAuth();
+    }, [router]);
+
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
         setLoading(true);
         setError('');
 
         try {
-            const result = await signIn({ email, password });
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email,
+                password
+            });
 
-            if (result.success) {
+            if (error) {
+                throw new Error(error.message);
+            }
+
+            if (data?.session) {
                 router.push('/admin');
-                router.refresh(); // Important pour rafraîchir l'état d'authentification
-            } else {
-                setError(result.error || 'Erreur lors de la connexion');
             }
         } catch (err: any) {
-            setError(err.message || 'Erreur inattendue lors de la connexion');
+            setError(err.message || 'Erreur lors de la connexion');
             console.error('Erreur de connexion:', err);
         } finally {
             setLoading(false);
@@ -33,19 +50,24 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-100">
-            <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-                <h1 className="text-2xl font-bold mb-6 text-center">Administration SALLTECH</h1>
+        <div className="login-page">
+            <div className="login-container">
+                <div className="login-logo">
+                    <Logo id="login" />
+                </div>
+                <h1 className="login-title">
+                    Administration <span className="gradient-text">SALLTECH</span>
+                </h1>
 
                 {error && (
-                    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-                        {error}
+                    <div className="alert alert-error">
+                        <p>{error}</p>
                     </div>
                 )}
 
-                <form onSubmit={handleSubmit}>
-                    <div className="mb-4">
-                        <label className="block text-gray-700 mb-2" htmlFor="email">
+                <form onSubmit={handleSubmit} className="login-form">
+                    <div className="form-group">
+                        <label className="form-label" htmlFor="email">
                             Email
                         </label>
                         <input
@@ -53,13 +75,14 @@ export default function LoginPage() {
                             id="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            className="w-full px-3 py-2 border rounded"
+                            className="form-input"
                             required
+                            placeholder="votre@email.com"
                         />
                     </div>
 
-                    <div className="mb-6">
-                        <label className="block text-gray-700 mb-2" htmlFor="password">
+                    <div className="form-group">
+                        <label className="form-label" htmlFor="password">
                             Mot de passe
                         </label>
                         <input
@@ -67,17 +90,26 @@ export default function LoginPage() {
                             id="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            className="w-full px-3 py-2 border rounded"
+                            className="form-input"
                             required
+                            placeholder="••••••••"
                         />
                     </div>
 
                     <button
                         type="submit"
-                        className="w-full bg-salltech-blue text-white py-2 px-4 rounded"
+                        className="cta-button"
                         disabled={loading}
+                        style={{ width: '100%', marginTop: '16px' }}
                     >
-                        {loading ? 'Connexion...' : 'Se connecter'}
+                        {loading ? (
+                            <span>
+                                <span className="loading-spinner" style={{ display: 'inline-block', width: '16px', height: '16px', marginRight: '8px', verticalAlign: 'middle' }}></span>
+                                Connexion en cours...
+                            </span>
+                        ) : (
+                            'Se connecter'
+                        )}
                     </button>
                 </form>
             </div>

@@ -11,10 +11,20 @@ export async function directUpdateService(id: number, updates: Partial<ServicePr
         // Supprimer l'ID des mises à jour si présent
         const { id: _id, ...updatesWithoutId } = updates as any;
 
-        // Mettre à jour le service directement sans vérification préalable
+        // Sanitiser les données avant l'envoi pour s'assurer qu'elles sont au bon format
+        const sanitizedUpdates = {
+            icon: updatesWithoutId.icon || null,
+            title: updatesWithoutId.title || null,
+            description: updatesWithoutId.description || null,
+            link: updatesWithoutId.link || null
+        };
+
+        console.log('Action directe - Données sanitisées:', sanitizedUpdates);
+
+        // Mettre à jour le service directement
         const { data, error: updateError } = await supabase
             .from('services')
-            .update(updatesWithoutId)
+            .update(sanitizedUpdates)
             .eq('id', id)
             .select();
 
@@ -28,9 +38,10 @@ export async function directUpdateService(id: number, updates: Partial<ServicePr
 
         console.log('Action directe - Résultat de la mise à jour:', data);
 
-        // Revalidate paths to update UI
-        revalidatePath('/');
-        revalidatePath('/admin');
+        // Forcer une revalidation plus aggressive
+        revalidatePath('/', 'layout');
+        revalidatePath('/admin', 'layout');
+        revalidatePath('/admin/services', 'layout');
 
         return {
             success: true,
