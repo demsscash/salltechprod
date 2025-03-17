@@ -1,14 +1,8 @@
 'use client';
 import { useEffect, useState, ChangeEvent, FormEvent } from 'react';
-import { ContactInfo } from '@/types';
+import { ContactInfo, ContactFormData } from '@/types';
 import { getContactInfo } from '@/actions/getContactInfo';
-import { supabase } from '@/lib/supabase';
-
-interface FormData {
-  name: string;
-  email: string;
-  message: string;
-}
+import { submitContactForm } from '@/actions/contactActions';
 
 interface SubmitResult {
   success: boolean;
@@ -17,7 +11,7 @@ interface SubmitResult {
 
 export default function Contact() {
   const [contactInfo, setContactInfo] = useState<ContactInfo | null>(null);
-  const [formData, setFormData] = useState<FormData>({
+  const [formData, setFormData] = useState<ContactFormData>({
     name: '',
     email: '',
     message: ''
@@ -25,11 +19,20 @@ export default function Contact() {
 
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [submitResult, setSubmitResult] = useState<SubmitResult>({ success: false, message: '' });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadContactInfo() {
-      const info = await getContactInfo();
-      setContactInfo(info);
+      try {
+        const info = await getContactInfo();
+        setContactInfo(info);
+      } catch (err) {
+        console.error('Erreur lors du chargement des informations de contact:', err);
+        setError("Impossible de charger les informations de contact. Veuillez réessayer.");
+      } finally {
+        setLoading(false);
+      }
     }
 
     loadContactInfo();
@@ -70,26 +73,22 @@ export default function Contact() {
     setIsSubmitting(true);
 
     try {
-      // Enregistrer le message de contact dans Supabase
-      const { error } = await supabase
-        .from('contact_messages')
-        .insert([
-          {
-            name: formData.name,
-            email: formData.email,
-            message: formData.message
-          }
-        ]);
+      const result = await submitContactForm(formData);
 
-      if (error) throw error;
+      if (result.success) {
+        setSubmitResult({
+          success: true,
+          message: 'Votre message a été envoyé avec succès! Nous vous répondrons bientôt.'
+        });
 
-      setSubmitResult({
-        success: true,
-        message: 'Votre message a été envoyé avec succès! Nous vous répondrons bientôt.'
-      });
-
-      // Réinitialiser le formulaire
-      setFormData({ name: '', email: '', message: '' });
+        // Réinitialiser le formulaire
+        setFormData({ name: '', email: '', message: '' });
+      } else {
+        setSubmitResult({
+          success: false,
+          message: result.error || 'Une erreur est survenue. Veuillez réessayer plus tard.'
+        });
+      }
     } catch (error) {
       console.error('Erreur d\'envoi:', error);
       setSubmitResult({
@@ -100,6 +99,42 @@ export default function Contact() {
       setIsSubmitting(false);
     }
   };
+
+  if (loading) {
+    return (
+      <section className="contact" id="contact">
+        <div className="container">
+          <div className="section-title">
+            <h2>Contactez-<span className="gradient-text">nous</span></h2>
+          </div>
+          <div className="flex justify-center items-center h-64">
+            <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-salltech-blue"></div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (error) {
+    return (
+      <section className="contact" id="contact">
+        <div className="container">
+          <div className="section-title">
+            <h2>Contactez-<span className="gradient-text">nous</span></h2>
+          </div>
+          <div className="flex justify-center items-center h-64 flex-col">
+            <p className="text-red-500 mb-4">{error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="bg-salltech-blue text-white py-2 px-4 rounded-full hover:bg-opacity-80 transition-all"
+            >
+              Réessayer
+            </button>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="contact" id="contact">

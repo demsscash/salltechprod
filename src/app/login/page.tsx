@@ -1,7 +1,7 @@
 'use client';
 import { useState, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
+import { signIn } from '@/actions/authActions';
 
 export default function LoginPage() {
     const [email, setEmail] = useState('');
@@ -16,23 +16,21 @@ export default function LoginPage() {
         setError('');
 
         try {
-            const { error } = await supabase.auth.signInWithPassword({
-                email,
-                password
-            });
+            const result = await signIn({ email, password });
 
-            if (error) throw error;
-
-            router.push('/admin');
-            router.refresh(); // Important pour rafraîchir l'état d'authentification
+            if (result.success) {
+                router.push('/admin');
+                router.refresh(); // Important pour rafraîchir l'état d'authentification
+            } else {
+                setError(result.error || 'Erreur lors de la connexion');
+            }
         } catch (err: any) {
-            setError(err.message || 'Erreur lors de la connexion');
+            setError(err.message || 'Erreur inattendue lors de la connexion');
+            console.error('Erreur de connexion:', err);
         } finally {
             setLoading(false);
         }
     };
-
-
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-100">

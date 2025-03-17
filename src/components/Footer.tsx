@@ -40,11 +40,20 @@ const footerLinkGroups: FooterLinkGroup[] = [
 
 export default function Footer() {
   const [socialLinks, setSocialLinks] = useState<SocialLink[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadSocialLinks() {
-      const links = await getSocialLinks();
-      setSocialLinks(links);
+      try {
+        const links = await getSocialLinks();
+        setSocialLinks(links);
+      } catch (err) {
+        console.error('Erreur lors du chargement des liens sociaux:', err);
+        setError("Impossible de charger les liens sociaux.");
+      } finally {
+        setLoading(false);
+      }
     }
 
     loadSocialLinks();
@@ -60,7 +69,13 @@ export default function Footer() {
             </div>
             <p>Développer des solutions digitales innovantes pour répondre aux besoins spécifiques du marché mauritanien.</p>
             <div className="social-links">
-              {socialLinks.map(link => (
+              {loading ? (
+                <div className="animate-pulse flex space-x-3">
+                  {[1, 2, 3, 4].map(i => (
+                    <div key={i} className="h-10 w-10 bg-gray-300 rounded-full"></div>
+                  ))}
+                </div>
+              ) : socialLinks.map(link => (
                 <a key={link.id} href={link.url} aria-label={link.label}>
                   <span>{link.name}</span>
                 </a>

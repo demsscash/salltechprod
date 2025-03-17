@@ -1,9 +1,21 @@
+
+
 'use client';
 import { useEffect, useState, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { ServiceProps } from '@/types';
+import { getServiceById, updateService } from '@/actions/serviceActions';
+import { use } from 'react';
 
-export default function EditServicePage({ params }: { params: { id: string } }) {
+type Params = {
+    id: string;
+};
+
+export default function EditServicePage({ params }: { params: Params | Promise<Params> }) {
+    // Déballer params avec React.use()
+    const unwrappedParams = params instanceof Promise ? use(params) : params;
+    const serviceId = parseInt(unwrappedParams.id);
+
     const [service, setService] = useState<ServiceProps>({
         icon: '',
         title: '',
@@ -19,24 +31,29 @@ export default function EditServicePage({ params }: { params: { id: string } }) 
     useEffect(() => {
         async function fetchService() {
             try {
-                const response = await fetch(`/api/services/${params.id}`);
-
-                if (!response.ok) {
-                    throw new Error('Service non trouvé');
+                if (isNaN(serviceId)) {
+                    throw new Error('ID de service invalide');
                 }
 
-                const data = await response.json();
-                setService(data);
-            } catch (err) {
-                setError('Erreur lors du chargement du service');
-                console.error(err);
+                console.log("Récupération du service avec ID:", serviceId);
+                const result = await getServiceById(serviceId);
+                console.log("Résultat de getServiceById:", result);
+
+                if (!result.success || !result.data) {
+                    throw new Error(result.error || 'Service non trouvé');
+                }
+
+                setService(result.data);
+            } catch (err: any) {
+                setError('Erreur lors du chargement du service: ' + (err.message || 'Erreur inconnue'));
+                console.error('Erreur lors du chargement:', err);
             } finally {
                 setLoading(false);
             }
         }
 
         fetchService();
-    }, [params.id]);
+    }, [serviceId]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
@@ -48,22 +65,24 @@ export default function EditServicePage({ params }: { params: { id: string } }) 
         setSaving(true);
 
         try {
-            const response = await fetch(`/api/services/${params.id}`, {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(service)
-            });
+            if (isNaN(serviceId)) {
+                throw new Error('ID de service invalide');
+            }
 
-            if (!response.ok) {
-                throw new Error('Erreur lors de la sauvegarde');
+            console.log("Mise à jour du service avec ID:", serviceId);
+            console.log("Données à mettre à jour:", service);
+
+            const result = await updateService(serviceId, service);
+            console.log("Résultat de updateService:", result);
+
+            if (!result.success) {
+                throw new Error(result.error || 'Erreur lors de la sauvegarde');
             }
 
             router.push('/admin');
-        } catch (err) {
-            setError('Erreur lors de la sauvegarde du service');
-            console.error(err);
+        } catch (err: any) {
+            setError('Erreur lors de la sauvegarde du service: ' + (err.message || 'Erreur inconnue'));
+            console.error('Erreur lors de la sauvegarde:', err);
         } finally {
             setSaving(false);
         }
@@ -143,7 +162,7 @@ export default function EditServicePage({ params }: { params: { id: string } }) 
                         type="text"
                         id="link"
                         name="link"
-                        value={service.link}
+                        value={service.link || ''}
                         onChange={handleChange}
                         className="w-full px-3 py-2 border rounded"
                     />

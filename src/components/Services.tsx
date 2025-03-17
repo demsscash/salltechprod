@@ -7,12 +7,19 @@ import { getServices } from '@/actions/getServices';
 export default function Services() {
   const [services, setServices] = useState<ServiceProps[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadServices() {
-      const data = await getServices();
-      setServices(data);
-      setLoading(false);
+      try {
+        const data = await getServices();
+        setServices(data);
+      } catch (err) {
+        setError("Impossible de charger les services. Veuillez réessayer.");
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
     }
 
     loadServices();
@@ -52,6 +59,27 @@ export default function Services() {
           </div>
           <div className="flex justify-center items-center h-64">
             <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-salltech-blue"></div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (error) {
+    return (
+      <section className="services" id="services">
+        <div className="container">
+          <div className="section-title">
+            <h2>Nos <span className="gradient-text">Services</span></h2>
+          </div>
+          <div className="flex justify-center items-center h-64 flex-col">
+            <p className="text-red-500 mb-4">{error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="bg-salltech-blue text-white py-2 px-4 rounded-full hover:bg-opacity-80 transition-all"
+            >
+              Réessayer
+            </button>
           </div>
         </div>
       </section>

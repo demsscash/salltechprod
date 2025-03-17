@@ -8,12 +8,19 @@ import { getPortfolioItems } from '@/actions/getPortfolioItems';
 export default function Portfolio() {
   const [portfolioItems, setPortfolioItems] = useState<PortfolioItemProps[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadPortfolio() {
-      const data = await getPortfolioItems();
-      setPortfolioItems(data);
-      setLoading(false);
+      try {
+        const data = await getPortfolioItems();
+        setPortfolioItems(data);
+      } catch (err) {
+        console.error('Erreur lors du chargement du portfolio:', err);
+        setError("Impossible de charger les projets. Veuillez réessayer.");
+      } finally {
+        setLoading(false);
+      }
     }
 
     loadPortfolio();
@@ -53,6 +60,27 @@ export default function Portfolio() {
           </div>
           <div className="flex justify-center items-center h-64">
             <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-salltech-blue"></div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (error) {
+    return (
+      <section className="portfolio" id="portfolio">
+        <div className="container">
+          <div className="section-title">
+            <h2>Notre <span className="gradient-text">Portfolio</span></h2>
+          </div>
+          <div className="flex justify-center items-center h-64 flex-col">
+            <p className="text-red-500 mb-4">{error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="bg-salltech-blue text-white py-2 px-4 rounded-full hover:bg-opacity-80 transition-all"
+            >
+              Réessayer
+            </button>
           </div>
         </div>
       </section>
