@@ -1,17 +1,16 @@
 import { supabase } from '@/lib/supabase';
 import { NextRequest, NextResponse } from 'next/server';
 
-// N'utilisez pas d'interface ou de type personnalisé
-// Utilisez plutôt la structure exacte attendue par Next.js
+// Utiliser any pour le second paramètre
 export async function GET(
     request: NextRequest,
-    context: { params: { id: string } }
+    { params }: any
 ) {
     try {
         const { data, error } = await supabase
             .from('services')
             .select('*')
-            .eq('id', context.params.id)
+            .eq('id', params.id)
             .single();
 
         if (error) {
@@ -31,7 +30,7 @@ export async function GET(
 // Mettre à jour un service
 export async function PATCH(
     request: NextRequest,
-    context: { params: { id: string } }
+    { params }: any
 ) {
     try {
         const serviceData = await request.json();
@@ -39,7 +38,7 @@ export async function PATCH(
         const { data, error } = await supabase
             .from('services')
             .update(serviceData)
-            .eq('id', context.params.id)
+            .eq('id', params.id)
             .select();
 
         if (error) throw error;
@@ -58,13 +57,13 @@ export async function PATCH(
 // Supprimer un service
 export async function DELETE(
     request: NextRequest,
-    context: { params: { id: string } }
+    { params }: any
 ) {
     try {
         const { error } = await supabase
             .from('services')
             .delete()
-            .eq('id', context.params.id);
+            .eq('id', params.id);
 
         if (error) throw error;
 
